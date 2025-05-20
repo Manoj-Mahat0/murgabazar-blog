@@ -104,9 +104,9 @@ def delete_blog(id: int, db: Session = Depends(get_db), current_user: User = Dep
 @app.put("/blogs/{id}", response_model=BlogResponse)
 def update_blog(
     id: int,
-    title: str = Form(...),
-    content: str = Form(""),
-    tags: str = Form(""),
+    title: str = Form(None),
+    content: str = Form(None),
+    tags: str = Form(None),
     image: UploadFile = File(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -115,10 +115,12 @@ def update_blog(
     if not blog:
         raise HTTPException(status_code=404, detail="Blog not found or unauthorized")
 
-    blog.title = title
-    blog.content = content
-    blog.tags = tags
-
+    if title is not None:
+        blog.title = title
+    if content is not None:
+        blog.content = content
+    if tags is not None:
+        blog.tags = tags
     if image:
         try:
             image_path = os.path.join(UPLOAD_DIR, image.filename)
@@ -126,11 +128,12 @@ def update_blog(
                 shutil.copyfileobj(image.file, buffer)
             blog.image = image_path
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Image update failed: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Image upload failed: {str(e)}")
 
     db.commit()
     db.refresh(blog)
     return blog
+
 
 @app.get("/blogs/all", response_model=list[BlogResponse])
 def get_all_blogs_with_users(db: Session = Depends(get_db)):
