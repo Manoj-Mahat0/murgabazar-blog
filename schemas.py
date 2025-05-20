@@ -10,6 +10,10 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
+class LoginRequest(BaseModel):  # 👈 Add this
+    email: EmailStr
+    password: str
+    
 # Blog
 class BlogBase(BaseModel):
     title: str

@@ -10,8 +10,6 @@ from models import User, Blog
 from schemas import UserCreate, Token, BlogResponse
 from dependencies import get_db, get_current_user
 from auth import hash_password, verify_password, create_access_token
-from fastapi.staticfiles import StaticFiles
-
 
 # Init
 app = FastAPI()
@@ -19,7 +17,7 @@ Base.metadata.create_all(bind=engine)
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 # CORS
 app.add_middleware(
     CORSMiddleware,
@@ -136,3 +134,10 @@ def update_blog(
 def get_all_blogs_with_users(db: Session = Depends(get_db)):
     blogs = db.query(Blog).all()
     return blogs
+# ✅ Get Blog by ID
+@app.get("/blogs/{id}", response_model=BlogResponse)
+def get_blog_by_id(id: int, db: Session = Depends(get_db)):
+    blog = db.query(Blog).filter(Blog.id == id).first()
+    if not blog:
+        raise HTTPException(status_code=404, detail="Blog not found")
+    return blog
