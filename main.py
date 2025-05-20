@@ -10,6 +10,7 @@ from models import User, Blog
 from schemas import UserCreate, Token, BlogResponse
 from dependencies import get_db, get_current_user
 from auth import hash_password, verify_password, create_access_token
+from fastapi.staticfiles import StaticFiles
 
 # Init
 app = FastAPI()
@@ -17,6 +18,7 @@ Base.metadata.create_all(bind=engine)
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # CORS
 app.add_middleware(
